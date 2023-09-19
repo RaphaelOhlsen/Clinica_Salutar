@@ -2,11 +2,13 @@ package dev.mocad.salutar.service.ficha;
 
 import dev.mocad.salutar.dao.FichaPacienteDAO;
 import dev.mocad.salutar.model.FichaPaciente;
+import org.slf4j.ILoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
+
 
 @Component
 public class FichaServiceImpl implements IFichaService {
@@ -21,9 +23,15 @@ public class FichaServiceImpl implements IFichaService {
     return dao.save(nova);
   }
 
-  @Override
   public FichaPaciente alterar(FichaPaciente ficha) {
-    return dao.save(ficha);
+    FichaPaciente tmp = dao.findById(ficha.getIdFicha()).orElse(null);
+    if (tmp != null) {
+      if (ficha.getAtivo() != null) {
+        tmp.setAtivo(ficha.getAtivo());
+      }
+      return dao.save(ficha);
+    }
+    return null;
   }
 
   @Override
@@ -38,10 +46,10 @@ public class FichaServiceImpl implements IFichaService {
 
   @Override
   public boolean excluir(Integer id) {
-    FichaPaciente ficha = recuperarPeloId(id);
-    if (ficha != null) {
-      ficha.setAtivo(0);
-      alterar(ficha);
+    FichaPaciente token = recuperarPeloId(id);
+    if (token != null) {
+      token.setAtivo(0);
+      dao.save(token);
       return true;
     }
     return false;
